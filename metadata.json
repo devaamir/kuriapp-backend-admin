@@ -1,0 +1,5 @@
+{
+  "name": "KuriApp Admin",
+  "description": "A modern, responsive admin dashboard with secure login authentication and data visualization.",
+  "requestFramePermissions": []
+}

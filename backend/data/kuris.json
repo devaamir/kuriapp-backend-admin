@@ -1,0 +1,18 @@
+[
+  {
+    "id": "k_1763884209669",
+    "name": "ichareela",
+    "monthlyAmount": 5000,
+    "description": "Test Description",
+    "duration": "12",
+    "startDate": "2025-10-10",
+    "kuriTakenDate": "2025-10-10",
+    "adminId": "u_1763883126899",
+    "memberIds": [
+      "u_1763883654797"
+    ],
+    "status": "active",
+    "type": "existing",
+    "createdBy": "admin-1"
+  }
+]

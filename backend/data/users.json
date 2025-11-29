@@ -1,0 +1,22 @@
+[
+  {
+    "id": "u_1763883126899",
+    "name": "Sayed Muhammed Aamir",
+    "email": "pmaamirit@gmail.com",
+    "password": "1234567",
+    "role": "member",
+    "status": "active",
+    "uniqueCode": "#JV2F6W",
+    "avatar": "https://ui-avatars.com/api/?name=Aamir&background=random&color=fff"
+  },
+  {
+    "id": "u_1763883654797",
+    "name": "Shamnad",
+    "email": "shamnad@gmail.com",
+    "password": "123456",
+    "role": "member",
+    "status": "active",
+    "uniqueCode": "#1NWM1H",
+    "avatar": "https://ui-avatars.com/api/?name=Shamnad&background=random&color=fff"
+  }
+]
