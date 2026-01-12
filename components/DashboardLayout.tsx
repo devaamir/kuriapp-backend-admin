@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Settings, 
-  LogOut, 
-  Menu, 
-  X, 
+import {
+  LayoutDashboard,
+  Users,
+  Settings,
+  LogOut,
+  Menu,
+  X,
   Bell,
   Search,
   ChevronDown,
@@ -21,12 +21,12 @@ interface DashboardLayoutProps {
   onNavigate: (page: string) => void;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  user, 
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  user,
   onLogout,
   activePage,
-  onNavigate 
+  onNavigate
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -34,11 +34,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const navigation = [
     { name: 'Dashboard', icon: LayoutDashboard, id: 'dashboard', roles: ['admin', 'member'] },
     { name: 'Users', icon: Users, id: 'users', roles: ['admin'] },
-    { name: 'Kuris', icon: Briefcase, id: 'kuris', roles: ['admin', 'member'] },
+    { name: 'Kuris', icon: Briefcase, id: 'kuris', roles: ['admin'] },
     { name: 'Settings', icon: Settings, id: 'settings', roles: ['admin', 'member'] },
   ];
 
-  const filteredNavigation = navigation.filter(item => 
+  const filteredNavigation = navigation.filter(item =>
     user && item.roles.includes(user.role)
   );
 
@@ -48,7 +48,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     <div className="min-h-screen bg-slate-50 flex">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -67,7 +67,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <span className="text-white font-bold text-lg">K</span>
             </div>
             <span className="text-xl font-bold text-slate-900 tracking-tight">KuriApp</span>
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(false)}
               className="ml-auto lg:hidden text-slate-400 hover:text-slate-600"
             >
@@ -86,8 +86,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 }}
                 className={`
                   w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
-                  ${activePage === item.id 
-                    ? 'bg-indigo-50 text-indigo-700' 
+                  ${activePage === item.id
+                    ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                 `}
               >
@@ -124,7 +124,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             >
               <Menu className="w-6 h-6" />
             </button>
-            
+
             {/* Search Bar (Visual only) */}
             <div className="hidden sm:flex relative max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -143,9 +143,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <Bell className="h-6 w-6" />
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
             </button>
-            
+
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center max-w-xs rounded-full text-sm focus:outline-none lg:p-2 lg:rounded-md lg:hover:bg-slate-50 transition-colors"
               >
@@ -159,7 +159,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </span>
                 <ChevronDown className="hidden ml-1 h-4 w-4 text-slate-400 lg:block" />
               </button>
-              
+
               {/* Profile Dropdown */}
               {isProfileOpen && (
                 <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">

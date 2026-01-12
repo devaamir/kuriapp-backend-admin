@@ -33,7 +33,7 @@ router.get('/', (req, res) => {
 
 // CREATE user
 router.post('/', (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, isDummy } = req.body;
 
     if (!name || !email) {
         return res.status(400).json({ success: false, error: 'Name and email are required' });
@@ -54,7 +54,7 @@ router.post('/', (req, res) => {
         lastLogin: 'Never',
         uniqueCode: '#' + Math.random().toString(36).substr(2, 6).toUpperCase(),
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`,
-        isDummy: !password
+        isDummy: isDummy || false
     };
 
     users.unshift(newUser); // Add to beginning

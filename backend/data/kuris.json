@@ -1,18 +1,53 @@
 [
   {
-    "id": "k_1763884209669",
-    "name": "ichareela",
+    "id": "k_1767402554106",
+    "name": "ICHRL NEW",
     "monthlyAmount": 5000,
-    "description": "Test Description",
-    "duration": "12",
-    "startDate": "2025-10-10",
-    "kuriTakenDate": "2025-10-10",
+    "description": "new 2026",
+    "duration": "8",
+    "startDate": "2026-01-03",
+    "kuriTakenDate": "2026-01-10",
     "adminId": "u_1763883126899",
     "memberIds": [
-      "u_1763883654797"
+      "u_1763883126899",
+      "u_1763883654797",
+      "u_1764443619258",
+      "u_1767405009433"
     ],
     "status": "active",
-    "type": "existing",
-    "createdBy": "admin-1"
+    "type": "new",
+    "createdBy": "u_1763883126899",
+    "winners": [
+      {
+        "month": 1,
+        "memberId": "u_1764443619258"
+      }
+    ],
+    "payments": [
+      {
+        "memberId": "u_1767405009433",
+        "month": 1,
+        "status": "paid",
+        "paidDate": "2026-01-03"
+      },
+      {
+        "memberId": "u_1764443619258",
+        "month": 1,
+        "status": "paid",
+        "paidDate": "2026-01-03"
+      },
+      {
+        "memberId": "u_1763883654797",
+        "month": 1,
+        "status": "paid",
+        "paidDate": "2026-01-03"
+      },
+      {
+        "memberId": "u_1763883126899",
+        "month": 1,
+        "status": "paid",
+        "paidDate": "2026-01-03"
+      }
+    ]
   }
 ]

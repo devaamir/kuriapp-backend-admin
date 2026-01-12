@@ -141,27 +141,34 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
   const createDummyUser = async () => {
     if (!dummyName) return;
 
-    // In a real app, we should create this user via API first
-    // For now, we'll just add to local state to simulate selection
-    // Ideally: POST /api/v1/users with isDummy: true
-
-    const newDummy: User = {
-      id: Date.now().toString(),
+    const newDummy = {
       name: dummyName,
-      email: `${dummyName.toLowerCase().replace(/\s/g, '')}@dummy.local`, // Placeholder
+      email: `${dummyName.toLowerCase().replace(/\s/g, '')}@dummy.local`,
+      password: Math.random().toString(36).substring(7), // Random password for dummy
       role: 'member',
-      status: 'active',
-      lastLogin: 'Never',
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(dummyName)}&background=random&color=fff`,
-      uniqueCode: generateUniqueCode(),
       isDummy: true
     };
 
-    // Optimistic update
-    setUsers(prev => [newDummy, ...prev]);
-    setSelectedMembers(prev => [...prev, newDummy.id]);
-    setDummyName('');
-    setIsDummyModalOpen(false);
+    try {
+      const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newDummy)
+      });
+
+      if (response.ok) {
+        const createdUser = await response.json();
+        setUsers(prev => [createdUser, ...prev]);
+        setSelectedMembers(prev => [...prev, createdUser.id]);
+        setDummyName('');
+        setIsDummyModalOpen(false);
+      } else {
+        console.error('Failed to create dummy user');
+      }
+    } catch (error) {
+      console.error('Error creating dummy user:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -307,16 +314,21 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {canEdit && (
-                          <div className="flex items-center justify-end space-x-2">
-                            <button onClick={() => handleOpenEdit(kuri)} className="p-1 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded">
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(kuri.id)} className="p-1 text-red-600 hover:text-red-900 bg-red-50 rounded">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-end space-x-2">
+                          <button onClick={() => window.location.hash = `/kuris/${kuri.id}`} className="p-1 text-slate-600 hover:text-slate-900 bg-slate-50 rounded" title="View Details">
+                            <Briefcase className="w-4 h-4" />
+                          </button>
+                          {canEdit && (
+                            <>
+                              <button onClick={() => handleOpenEdit(kuri)} className="p-1 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded" title="Edit">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete(kuri.id)} className="p-1 text-red-600 hover:text-red-900 bg-red-50 rounded" title="Delete">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
@@ -419,14 +431,34 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
                       <p className="text-sm text-slate-500 text-center py-4">No members added yet.</p>
                     ) : (
                       selectedMembers.map(memberId => {
-                        const user = users.find(u => u.id === memberId) || (memberId === currentUser.id ? currentUser : null);
-                        if (!user) return null;
+                        // Try to find the user, or create a placeholder for dummy users
+                        let user = users.find(u => u.id === memberId) || (memberId === currentUser.id ? currentUser : null);
+
+                        // If user not found, create a placeholder dummy user object
+                        if (!user) {
+                          user = {
+                            id: memberId,
+                            name: `Member ${memberId.substring(0, 8)}`,
+                            email: `placeholder_${memberId}@dummy.local`,
+                            role: 'member' as const,
+                            status: 'inactive' as const,
+                            lastLogin: 'Never',
+                            avatar: `https://ui-avatars.com/api/?name=Placeholder&background=94a3b8&color=fff`,
+                            uniqueCode: '#PENDING',
+                            isDummy: true
+                          };
+                        }
+
                         return (
-                          <div key={memberId} className={`flex items-center bg-white p-2 rounded-lg shadow-sm border border-slate-200`}>
+                          <div key={memberId} className={`flex items-center bg-white p-2 rounded-lg shadow-sm border ${user.isDummy ? 'border-dashed border-amber-200 bg-amber-50/30' : 'border-slate-200'
+                            }`}>
                             <img src={user.avatar} alt="" className="w-8 h-8 rounded-full" />
                             <div className="ml-3 flex-1 min-w-0">
-                              <div className="flex items-center">
+                              <div className="flex items-center gap-1.5">
                                 <p className="text-xs font-medium text-slate-900 truncate">{user.name}</p>
+                                {user.isDummy && (
+                                  <Bot className="w-3 h-3 text-amber-600 flex-shrink-0" title="Placeholder User" />
+                                )}
                                 {formData.adminId === memberId && (
                                   <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800">
                                     Manager

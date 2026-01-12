@@ -18,6 +18,9 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
     const [members, setMembers] = useState<User[]>([]);
     const [allUsers, setAllUsers] = useState<User[]>([]);
 
+    // Monthly Management State
+    const [selectedMonth, setSelectedMonth] = useState(1);
+
     // Admin Features State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [showMemberSelector, setShowMemberSelector] = useState(false);
@@ -47,8 +50,9 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
             if (usersRes.ok) {
                 const usersData: User[] = await usersRes.json();
                 setAllUsers(usersData);
-                const membersList = usersData.filter(u => kuriData.memberIds.includes(u.id));
-                setMembers(membersList);
+                // Members are now populated by backend including dummy users
+                // So we just use the members array from kuriData directly
+                setMembers(kuriData.members || []);
             }
 
         } catch (err: any) {
@@ -92,21 +96,35 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
 
     const createDummyUser = async () => {
         if (!dummyName) return;
-        const newDummy: User = {
-            id: Date.now().toString(),
+
+        const newDummy = {
             name: dummyName,
             email: `${dummyName.toLowerCase().replace(/\s/g, '')}@dummy.local`,
+            password: Math.random().toString(36).substring(7), // Random password for dummy
             role: 'member',
-            status: 'active',
-            lastLogin: 'Never',
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(dummyName)}&background=random&color=fff`,
-            uniqueCode: generateUniqueCode(),
             isDummy: true
         };
-        setAllUsers(prev => [newDummy, ...prev]);
-        setSelectedMembers(prev => [...prev, newDummy.id]);
-        setDummyName('');
-        setIsDummyModalOpen(false);
+
+        try {
+            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const response = await fetch(`${API_BASE_URL}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newDummy)
+            });
+
+            if (response.ok) {
+                const createdUser = await response.json();
+                setAllUsers(prev => [createdUser, ...prev]);
+                setSelectedMembers(prev => [...prev, createdUser.id]);
+                setDummyName('');
+                setIsDummyModalOpen(false);
+            } else {
+                console.error('Failed to create dummy user');
+            }
+        } catch (error) {
+            console.error('Error creating dummy user:', error);
+        }
     };
 
     const handleSaveKuri = async (e: React.FormEvent) => {
@@ -136,12 +154,77 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         }
     };
 
+    const handleUpdatePayment = async (memberId: string, status: 'paid' | 'pending') => {
+        if (!kuri) return;
+
+        const newPayment: Payment = {
+            memberId,
+            month: selectedMonth,
+            status,
+            paidDate: status === 'paid' ? new Date().toISOString().split('T')[0] : undefined
+        };
+
+        // Filter out existing payment for this member/month and add new one
+        const otherPayments = kuri.payments?.filter(p => !(p.memberId === memberId && p.month === selectedMonth)) || [];
+        const updatedPayments = [...otherPayments, newPayment];
+
+        const updatedKuri = { ...kuri, payments: updatedPayments };
+        setKuri(updatedKuri); // Optimistic update
+
+        try {
+            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payments: updatedPayments })
+            });
+        } catch (error) {
+            console.error('Failed to update payment:', error);
+            fetchData(); // Revert on error
+        }
+    };
+
+    const handleSelectWinner = async (memberId: string) => {
+        if (!kuri) return;
+
+        // Filter out existing winner for this month
+        const otherWinners = kuri.winners?.filter(w => w.month !== selectedMonth) || [];
+        const updatedWinners = memberId ? [...otherWinners, { month: selectedMonth, memberId }] : otherWinners;
+
+        const updatedKuri = { ...kuri, winners: updatedWinners };
+        setKuri(updatedKuri); // Optimistic update
+
+        try {
+            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ winners: updatedWinners })
+            });
+        } catch (error) {
+            console.error('Failed to update winner:', error);
+            fetchData(); // Revert on error
+        }
+    };
+
     // Analytics Helpers
-    const currentMonth = 2; // Mock current month
-    const paidMembersCount = kuri?.payments?.filter(p => p.month === currentMonth && p.status === 'paid').length || 0;
+    const paidMembersCount = kuri?.payments?.filter(p => p.month === selectedMonth && p.status === 'paid').length || 0;
     const totalExpected = (kuri?.monthlyAmount || 0) * (kuri?.memberIds.length || 0);
     const totalCollected = (kuri?.monthlyAmount || 0) * paidMembersCount;
     const collectionProgress = totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0;
+    const currentWinnerId = kuri?.winners?.find(w => w.month === selectedMonth)?.memberId;
+    const currentWinner = members.find(m => m.id === currentWinnerId);
+
+    // Winner Selection Validation
+    const getKuriTakenDate = (start: string, month: number) => {
+        const date = new Date(start);
+        date.setMonth(date.getMonth() + (month - 1));
+        return date;
+    };
+
+    const kuriTakenDate = kuri?.startDate ? getKuriTakenDate(kuri.startDate, selectedMonth) : new Date();
+    const isWinnerSelectionEnabled = new Date() >= kuriTakenDate;
+    const formattedTakenDate = kuriTakenDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     if (loading) {
         return (
@@ -206,150 +289,271 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
                 </div>
             </div>
 
-            {/* Admin Analytics Section */}
-            {isAdmin && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
-                        <BarChart2 className="h-5 w-5 mr-2 text-indigo-600" />
-                        Collection Analytics (Month {currentMonth})
+            {/* Monthly Management Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center">
+                        <Calendar className="h-5 w-5 mr-2 text-indigo-600" />
+                        Monthly Activity
                     </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-slate-50 p-4 rounded-xl">
-                            <div className="text-sm text-slate-500">Total Expected</div>
-                            <div className="text-xl font-bold text-slate-900">₹{totalExpected.toLocaleString()}</div>
-                        </div>
-                        <div className="bg-emerald-50 p-4 rounded-xl">
-                            <div className="text-sm text-emerald-600">Collected</div>
-                            <div className="text-xl font-bold text-emerald-700">₹{totalCollected.toLocaleString()}</div>
-                        </div>
-                        <div className="bg-amber-50 p-4 rounded-xl">
-                            <div className="text-sm text-amber-600">Pending</div>
-                            <div className="text-xl font-bold text-amber-700">₹{(totalExpected - totalCollected).toLocaleString()}</div>
-                        </div>
-                    </div>
-
-                    <div className="mb-2 flex justify-between text-sm">
-                        <span className="text-slate-500">Collection Progress</span>
-                        <span className="font-bold text-indigo-600">{Math.round(collectionProgress)}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2.5 mb-6">
-                        <div className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${collectionProgress}%` }}></div>
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-6">
-                        <h4 className="font-bold text-slate-900 mb-4">Member Payment Status</h4>
-                        <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                            {members.map(member => {
-                                const isPaid = kuri.payments?.some(p => p.memberId === member.id && p.month === currentMonth && p.status === 'paid');
-                                return (
-                                    <div key={member.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                                        <div className="flex items-center">
-                                            <img src={member.avatar} alt="" className="w-8 h-8 rounded-full" />
-                                            <div className="ml-3">
-                                                <div className="text-sm font-medium text-slate-900">{member.name}</div>
-                                                <div className="text-xs text-slate-500">{member.uniqueCode}</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center">
-                                            {isPaid ? (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                                                    <CheckCircle className="w-3 h-3 mr-1" /> Paid
-                                                </span>
-                                            ) : (
-                                                <button className="text-xs font-medium text-indigo-600 hover:text-indigo-800 border border-indigo-200 px-3 py-1 rounded-full hover:bg-indigo-50">
-                                                    Mark as Paid
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Schedule / Timeline */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
-                        <Calendar className="h-5 w-5 mr-2 text-indigo-500" />
-                        Payment Schedule
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                            <div className="flex items-center">
-                                <CheckCircle className="h-5 w-5 text-emerald-500 mr-3" />
-                                <div>
-                                    <div className="text-sm font-medium text-slate-900">Month 1</div>
-                                    <div className="text-xs text-slate-500">Paid on Nov 10, 2025</div>
-                                </div>
-                            </div>
-                            <span className="text-sm font-bold text-slate-900">₹{kuri.monthlyAmount.toLocaleString()}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 bg-white border border-indigo-100 rounded-lg shadow-sm">
-                            <div className="flex items-center">
-                                <Clock className="h-5 w-5 text-indigo-500 mr-3" />
-                                <div>
-                                    <div className="text-sm font-medium text-slate-900">Month 2 (Current)</div>
-                                    <div className="text-xs text-slate-500">Due by Dec 10, 2025</div>
-                                </div>
-                            </div>
-                            {currentUser &&
-                                currentUser.role !== 'admin' &&
-                                kuri.adminId !== currentUser.id &&
-                                kuri.createdBy !== currentUser.id && (
-                                    <button className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors">
-                                        Pay Now
-                                    </button>
-                                )}
-                        </div>
-
-                        {[3, 4, 5].map(m => (
-                            <div key={m} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg opacity-60">
-                                <div className="flex items-center">
-                                    <div className="h-5 w-5 rounded-full border-2 border-slate-200 mr-3"></div>
-                                    <div>
-                                        <div className="text-sm font-medium text-slate-900">Month {m}</div>
-                                        <div className="text-xs text-slate-500">Upcoming</div>
-                                    </div>
-                                </div>
-                                <span className="text-sm font-medium text-slate-400">₹{kuri.monthlyAmount.toLocaleString()}</span>
-                            </div>
+                    <div className="flex items-center space-x-2 overflow-x-auto">
+                        {Array.from({ length: kuri.duration || 12 }, (_, i) => i + 1).map(month => (
+                            <button
+                                key={month}
+                                onClick={() => setSelectedMonth(month)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap
+                                    ${selectedMonth === month
+                                        ? 'bg-indigo-600 text-white shadow-sm'
+                                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Month {month}
+                            </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Info / Rules */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
-                        <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
-                        Scheme Information
-                    </h3>
-                    <div className="prose prose-sm text-slate-500">
-                        <p>
-                            This is a standard chit fund scheme. Members contribute a fixed amount every month for the duration of the scheme.
-                        </p>
-                        <ul className="list-disc pl-5 space-y-2 mt-2">
-                            <li>Payments are due by the 10th of every month.</li>
-                            <li>Late payments may incur a penalty.</li>
-                            <li>The prize money is auctioned every month.</li>
-                            <li>The dividend is distributed equally among all non-prized subscribers.</li>
-                        </ul>
+                <div className="p-6 space-y-8">
+                    {/* Winner Section */}
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
+                        <div className="flex justify-between items-start mb-4">
+                            <h4 className="text-sm font-bold text-amber-800 uppercase tracking-wide flex items-center">
+                                <Bot className="w-4 h-4 mr-2" /> Winner of Month {selectedMonth}
+                            </h4>
+                            {!isWinnerSelectionEnabled && !currentWinner && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                    <Clock className="w-3 h-3 mr-1" /> Opens on {formattedTakenDate}
+                                </span>
+                            )}
+                        </div>
+
+                        {currentWinner ? (
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <img src={currentWinner.avatar} alt="" className="w-16 h-16 rounded-full border-4 border-white shadow-sm" />
+                                    <div className="ml-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="text-xl font-bold text-slate-900">{currentWinner.name}</div>
+                                            {currentWinner.isDummy && (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                                                    <Bot className="w-3 h-3 mr-1" /> Placeholder
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-sm text-slate-500">{currentWinner.uniqueCode}</div>
+                                    </div>
+                                </div>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => handleSelectWinner('')} // Clear winner
+                                        className="text-sm text-amber-600 hover:text-amber-800 underline"
+                                    >
+                                        Change
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-6">
+                                <p className="text-slate-500 mb-4">No winner selected for this month yet.</p>
+                                {isAdmin && (
+                                    <div className="relative inline-block text-left w-full max-w-xs mx-auto">
+                                        <select
+                                            onChange={(e) => handleSelectWinner(e.target.value)}
+                                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md disabled:bg-slate-100 disabled:text-slate-400"
+                                            value=""
+                                            disabled={!isWinnerSelectionEnabled}
+                                        >
+                                            <option value="" disabled>
+                                                {isWinnerSelectionEnabled ? "Select a Winner" : `Available on ${formattedTakenDate}`}
+                                            </option>
+                                            {members.map(m => (
+                                                <option key={m.id} value={m.id}>
+                                                    {m.name}{m.isDummy ? ' (Placeholder)' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-slate-100">
-                        <h4 className="text-sm font-bold text-slate-900 mb-2">Admin Contact</h4>
+                    {/* Payment Status - Only Visible to Admin */}
+                    {isAdmin && (
+                        <div>
+                            {currentWinner ? (
+                                <>
+                                    <div className="flex items-center justify-center mb-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                                        <div className="text-center">
+                                            <div className="text-sm text-slate-500 mb-1">Collection Progress</div>
+                                            <div className="flex items-baseline justify-center gap-2">
+                                                <span className="text-2xl font-bold text-indigo-600">₹{totalCollected.toLocaleString()}</span>
+                                                <span className="text-sm text-slate-400">of ₹{totalExpected.toLocaleString()}</span>
+                                            </div>
+                                            <div className="w-48 h-2 bg-slate-200 rounded-full mt-3 mx-auto overflow-hidden">
+                                                <div className="bg-indigo-500 h-full rounded-full transition-all duration-500" style={{ width: `${collectionProgress}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {members.map(member => {
+                                            const payment = kuri.payments?.find(p => p.memberId === member.id && p.month === selectedMonth);
+                                            const isPaid = payment?.status === 'paid';
+
+                                            return (
+                                                <div key={member.id} className={`flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition-colors ${member.isDummy ? 'bg-slate-50/50 border-dashed border-slate-200' : 'bg-white border-slate-100'
+                                                    }`}>
+                                                    <div className="flex items-center">
+                                                        <img src={member.avatar} alt="" className="w-10 h-10 rounded-full" />
+                                                        <div className="ml-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="text-sm font-medium text-slate-900">{member.name}</div>
+                                                                {member.isDummy && (
+                                                                    <Bot className="w-3.5 h-3.5 text-amber-600" title="Placeholder User" />
+                                                                )}
+                                                            </div>
+                                                            <div className="text-xs text-slate-500">{member.uniqueCode}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        {isPaid ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                                <CheckCircle className="w-3 h-3 mr-1" /> Paid
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                                <Clock className="w-3 h-3 mr-1" /> Pending
+                                                            </span>
+                                                        )}
+
+                                                        <button
+                                                            onClick={() => handleUpdatePayment(member.id, isPaid ? 'pending' : 'paid')}
+                                                            className={`p-1 rounded-full transition-colors ${isPaid ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-slate-300 hover:text-emerald-600 hover:bg-emerald-50'}`}
+                                                            title={isPaid ? "Mark as Pending" : "Mark as Paid"}
+                                                        >
+                                                            {isPaid ? <X className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                                    <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                    <h4 className="text-slate-900 font-medium">Payment Management Locked</h4>
+                                    <p className="text-sm text-slate-500 mt-1">Please select a winner for this month to unlock payment tracking.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {/* Regular Member View - Only show their own status if needed */}
+                    {!isAdmin && (
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                            <h4 className="font-bold text-slate-900 mb-2">My Status</h4>
+                            {(() => {
+                                const myPayment = kuri.payments?.find(p => p.memberId === currentUser?.id && p.month === selectedMonth);
+                                const isPaid = myPayment?.status === 'paid';
+                                return (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-slate-600">Payment for Month {selectedMonth}</span>
+                                        {isPaid ? (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                <CheckCircle className="w-3 h-3 mr-1" /> Paid
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                <Clock className="w-3 h-3 mr-1" /> Pending
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Schedule / Timeline */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                    <Calendar className="h-5 w-5 mr-2 text-indigo-500" />
+                    Payment Schedule
+                </h3>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center">
-                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                                A
+                            <CheckCircle className="h-5 w-5 text-emerald-500 mr-3" />
+                            <div>
+                                <div className="text-sm font-medium text-slate-900">Month 1</div>
+                                <div className="text-xs text-slate-500">Paid on Nov 10, 2025</div>
                             </div>
-                            <div className="ml-3">
-                                <div className="text-sm font-medium text-slate-900">Admin Support</div>
-                                <div className="text-xs text-slate-500">support@kuriapp.com</div>
+                        </div>
+                        <span className="text-sm font-bold text-slate-900">₹{kuri.monthlyAmount.toLocaleString()}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-white border border-indigo-100 rounded-lg shadow-sm">
+                        <div className="flex items-center">
+                            <Clock className="h-5 w-5 text-indigo-500 mr-3" />
+                            <div>
+                                <div className="text-sm font-medium text-slate-900">Month 2 (Current)</div>
+                                <div className="text-xs text-slate-500">Due by Dec 10, 2025</div>
                             </div>
+                        </div>
+                        {currentUser &&
+                            currentUser.role !== 'admin' &&
+                            kuri.adminId !== currentUser.id &&
+                            kuri.createdBy !== currentUser.id && (
+                                <button className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors">
+                                    Pay Now
+                                </button>
+                            )}
+                    </div>
+
+                    {[3, 4, 5].map(m => (
+                        <div key={m} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg opacity-60">
+                            <div className="flex items-center">
+                                <div className="h-5 w-5 rounded-full border-2 border-slate-200 mr-3"></div>
+                                <div>
+                                    <div className="text-sm font-medium text-slate-900">Month {m}</div>
+                                    <div className="text-xs text-slate-500">Upcoming</div>
+                                </div>
+                            </div>
+                            <span className="text-sm font-medium text-slate-400">₹{kuri.monthlyAmount.toLocaleString()}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Info / Rules */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                    <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+                    Scheme Information
+                </h3>
+                <div className="prose prose-sm text-slate-500">
+                    <p>
+                        This is a standard chit fund scheme. Members contribute a fixed amount every month for the duration of the scheme.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 mt-2">
+                        <li>Payments are due by the 10th of every month.</li>
+                        <li>Late payments may incur a penalty.</li>
+                        <li>The prize money is auctioned every month.</li>
+                        <li>The dividend is distributed equally among all non-prized subscribers.</li>
+                    </ul>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                    <h4 className="text-sm font-bold text-slate-900 mb-2">Admin Contact</h4>
+                    <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                            A
+                        </div>
+                        <div className="ml-3">
+                            <div className="text-sm font-medium text-slate-900">Admin Support</div>
+                            <div className="text-xs text-slate-500">support@kuriapp.com</div>
                         </div>
                     </div>
                 </div>
@@ -364,11 +568,19 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
                 {members.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {members.map(member => (
-                            <div key={member.id} className="flex items-center p-3 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
+                            <div key={member.id} className={`flex items-center p-3 border rounded-lg hover:bg-slate-50 transition-colors ${member.isDummy ? 'border-dashed border-slate-300 bg-slate-50/50' : 'border-slate-100'
+                                }`}>
                                 <img src={member.avatar} alt={member.name} className="h-10 w-10 rounded-full" />
-                                <div className="ml-3">
-                                    <p className="text-sm font-medium text-slate-900">{member.name}</p>
-                                    <p className="text-xs text-slate-500">{member.email}</p>
+                                <div className="ml-3 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium text-slate-900">{member.name}</p>
+                                        {member.isDummy && (
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                                                <Bot className="w-3 h-3 mr-0.5" /> Placeholder
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-500">{member.isDummy ? member.uniqueCode : member.email}</p>
                                 </div>
                             </div>
                         ))}
@@ -488,6 +700,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
                     <div className="fixed inset-0 bg-slate-900/50" onClick={() => setIsDummyModalOpen(false)}></div>
                     <div className="bg-white rounded-xl p-6 shadow-2xl w-full max-w-sm relative z-10">
                         <h4 className="text-lg font-bold mb-4">Create Dummy Member</h4>
+                        <p className="text-sm text-slate-500 mb-4">This will create a placeholder user account.</p>
                         <Input label="Member Name" value={dummyName} onChange={(e) => setDummyName(e.target.value)} autoFocus />
                         <div className="flex gap-2 mt-6">
                             <Button onClick={createDummyUser} disabled={!dummyName} className="flex-1">Create & Add</Button>

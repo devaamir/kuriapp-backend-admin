@@ -59,7 +59,7 @@ router.get('/:id', (req, res) => {
         return res.status(404).json({ success: false, error: 'Kuri not found' });
     }
 
-    // Populate members
+    // Populate members - include both real users and dummy placeholders
     const users = readUsers();
     const members = (kuri.memberIds || []).map(memberId => {
         const user = users.find(u => u.id === memberId);
@@ -68,8 +68,19 @@ router.get('/:id', (req, res) => {
             const { password, ...safeUser } = user;
             return safeUser;
         }
-        return null;
-    }).filter(Boolean);
+        // Create placeholder for members without accounts
+        return {
+            id: memberId,
+            name: `Member ${memberId.substring(0, 8)}`,
+            email: `placeholder_${memberId}@dummy.local`,
+            role: 'member',
+            status: 'inactive',
+            lastLogin: 'Never',
+            avatar: `https://ui-avatars.com/api/?name=Placeholder&background=94a3b8&color=fff`,
+            uniqueCode: '#PENDING',
+            isDummy: true
+        };
+    });
 
     res.json({ ...kuri, members });
 });

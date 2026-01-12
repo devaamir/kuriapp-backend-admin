@@ -1,5 +1,17 @@
 [
   {
+    "id": "u_1767405009433",
+    "name": "Sajad",
+    "email": "sajad@dummy.local",
+    "password": "787vp",
+    "role": "member",
+    "status": "active",
+    "lastLogin": "Never",
+    "uniqueCode": "#Y1N72T",
+    "avatar": "https://ui-avatars.com/api/?name=Sajad&background=random&color=fff",
+    "isDummy": true
+  },
+  {
     "id": "u_1763883126899",
     "name": "Sayed Muhammed Aamir",
     "email": "pmaamirit@gmail.com",
@@ -18,5 +30,15 @@
     "status": "active",
     "uniqueCode": "#1NWM1H",
     "avatar": "https://ui-avatars.com/api/?name=Shamnad&background=random&color=fff"
+  },
+  {
+    "id": "u_1764443619258",
+    "name": "Arshal",
+    "email": "arshal@gmail.com",
+    "password": "123456",
+    "role": "member",
+    "status": "active",
+    "uniqueCode": "#HZ1DPZ",
+    "avatar": "https://ui-avatars.com/api/?name=Arshal&background=random&color=fff"
   }
 ]

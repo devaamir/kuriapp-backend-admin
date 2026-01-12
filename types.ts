@@ -34,6 +34,7 @@ export interface Kuri {
   adminId?: string;
   createdBy?: string;
   payments?: Payment[];
+  winners?: { month: number; memberId: string }[];
 }
 
 export interface AuthState {
