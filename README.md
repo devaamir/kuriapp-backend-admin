@@ -174,6 +174,11 @@ Create a new Kuri scheme.
 
 **Endpoint:** `POST /kuris`
 
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
 **Request Body:**
 ```json
 {
@@ -182,18 +187,19 @@ Create a new Kuri scheme.
   "description": "Saving up for the year end trip",
   "duration": "10 Months",
   "startDate": "2024-06-01",
-  "adminId": "u_101", // The ID of the user creating the Kuri
-  "memberIds": ["u_101"] // The creator should be added as the first member
+  "memberIds": [] // Optional, creator is automatically added
 }
 ```
 
-**Note:** When created by a regular user (via mobile app), the `status` will default to `pending` until approved by a global admin. The creator is automatically assigned as the Kuri Admin.
+**Note:** The authenticated user (from token) is automatically set as the Kuri admin and creator. No need to pass `adminId`. Status defaults to `pending` until approved by a global admin.
 
 **Response (201 Created):**
 ```json
 {
   "id": "k_601",
   "name": "Trip to Goa 2024",
+  "adminId": "u_101",
+  "createdBy": "u_101",
   "status": "pending",
   ...
 }
@@ -287,4 +293,56 @@ Create a new user. If password is omitted, it's treated as a dummy user.
 
 **Response (201 Created):**
 Returns the created user object.
+
+---
+
+## 4. Spinner Wheel (Live Synchronization)
+
+### **Stream Spin Events (SSE)**
+Connect to receive real-time spin updates for a specific Kuri.
+
+**Endpoint:** `GET /spinner/stream/:kuriId`
+
+**Usage:**
+```javascript
+const eventSource = new EventSource(`http://<YOUR_IP>:3001/api/v1/spinner/stream/${kuriId}`);
+
+eventSource.onmessage = (event) => {
+  const spinData = JSON.parse(event.data);
+  // spinData: { easing, speed, rotates, winner, adminId, timestamp }
+  // Trigger wheel animation with this data
+};
+
+eventSource.onerror = () => {
+  eventSource.close();
+};
+```
+
+---
+
+### **Send Spin Data (Admin Only)**
+Admin sends spin configuration to trigger wheel animation for all connected users.
+
+**Endpoint:** `POST /spinner/spin/:kuriId`
+
+**Request Body:**
+```json
+{
+  "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+  "speed": 3000,
+  "rotates": 5,
+  "winner": "u_105",
+  "adminId": "u_101"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Spin broadcasted"
+}
+```
+
+**Note:** Only admin users should be allowed to call this endpoint. All connected clients listening on the SSE stream will receive this spin data instantly.
 

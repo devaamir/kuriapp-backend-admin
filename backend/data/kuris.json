@@ -1,43 +1,43 @@
 [
   {
-    "id": "k_1768229019884",
-    "name": "ABC",
-    "monthlyAmount": 10000,
-    "description": "new ABC",
-    "duration": "5 Months",
-    "startDate": "2026-01-30",
+    "id": "k_1771411726815",
+    "name": "Test",
+    "monthlyAmount": 5000,
+    "description": "test",
+    "duration": "10 Months",
+    "startDate": "2026-02-18",
     "kuriTakenDate": "",
-    "adminId": "",
-    "memberIds": [],
-    "status": "pending",
-    "type": "new"
-  },
-  {
-    "id": "k_1768229019883",
-    "name": "ABC",
-    "monthlyAmount": 10000,
-    "description": "new ABC",
-    "duration": "5 Months",
-    "startDate": "2026-01-30",
-    "kuriTakenDate": "",
-    "adminId": "",
-    "memberIds": [],
-    "status": "pending",
-    "type": "new"
-  },
-  {
-    "id": "k_1768228645028",
-    "name": "ABC",
-    "monthlyAmount": 10000,
-    "description": "new ABC",
-    "duration": "5 Months",
-    "startDate": "2026-01-30",
-    "kuriTakenDate": "",
-    "adminId": "admin-1",
-    "memberIds": [],
+    "adminId": "u_1763883126899",
+    "memberIds": [
+      "u_1763883126899",
+      "u_1771415516118",
+      "u_1771416044062"
+    ],
     "status": "active",
     "type": "new",
-    "createdBy": "admin-1"
+    "createdBy": "u_1763883126899",
+    "members": [
+      {
+        "id": "u_1763883126899",
+        "name": "Sayed Muhammed Aamir",
+        "email": "pmaamirit@gmail.com",
+        "role": "member",
+        "status": "active",
+        "uniqueCode": "#JV2F6W",
+        "avatar": "https://ui-avatars.com/api/?name=Aamir&background=random&color=fff"
+      },
+      {
+        "id": "u_1771414897271",
+        "name": "arshadd",
+        "email": "arshadd@dummy.local",
+        "role": "member",
+        "status": "active",
+        "lastLogin": "Never",
+        "uniqueCode": "#CXWTIB",
+        "avatar": "https://ui-avatars.com/api/?name=arshadd&background=random&color=fff",
+        "isDummy": true
+      }
+    ]
   },
   {
     "id": "k_1767402554106",
@@ -45,14 +45,16 @@
     "monthlyAmount": 5000,
     "description": "new 2026",
     "duration": "8",
-    "startDate": "2026-01-03",
+    "startDate": "2025-12-22",
     "kuriTakenDate": "2026-01-10",
     "adminId": "u_1763883126899",
     "memberIds": [
       "u_1763883126899",
       "u_1763883654797",
       "u_1764443619258",
-      "u_1767405009433"
+      "u_1767405009433",
+      "u_1771416044062",
+      "u_1771415516118"
     ],
     "status": "active",
     "type": "new",
@@ -61,6 +63,14 @@
       {
         "month": 1,
         "memberId": "u_1764443619258"
+      },
+      {
+        "month": 1,
+        "memberId": "u_1763883654797"
+      },
+      {
+        "month": 2,
+        "memberId": "u_1763883654797"
       }
     ],
     "payments": [
@@ -87,6 +97,70 @@
         "month": 1,
         "status": "paid",
         "paidDate": "2026-01-03"
+      },
+      {
+        "memberId": "u_1763883126899",
+        "month": 2,
+        "status": "paid",
+        "paidDate": "2026-02-14"
+      },
+      {
+        "memberId": "u_1763883654797",
+        "month": 2,
+        "status": "paid",
+        "paidDate": "2026-02-14"
+      },
+      {
+        "memberId": "u_1764443619258",
+        "month": 2,
+        "status": "paid",
+        "paidDate": "2026-02-14"
+      },
+      {
+        "memberId": "u_1767405009433",
+        "month": 2,
+        "status": "paid",
+        "paidDate": "2026-02-14"
+      }
+    ],
+    "members": [
+      {
+        "id": "u_1763883126899",
+        "name": "Sayed Muhammed Aamir",
+        "email": "pmaamirit@gmail.com",
+        "role": "member",
+        "status": "active",
+        "uniqueCode": "#JV2F6W",
+        "avatar": "https://ui-avatars.com/api/?name=Aamir&background=random&color=fff"
+      },
+      {
+        "id": "u_1763883654797",
+        "name": "Shamnad",
+        "email": "shamnad@gmail.com",
+        "role": "member",
+        "status": "active",
+        "uniqueCode": "#1NWM1H",
+        "avatar": "https://ui-avatars.com/api/?name=Shamnad&background=random&color=fff"
+      },
+      {
+        "id": "u_1764443619258",
+        "name": "Arshal",
+        "email": "arshal@gmail.com",
+        "role": "member",
+        "status": "active",
+        "uniqueCode": "#HZ1DPZ",
+        "avatar": "https://ui-avatars.com/api/?name=Arshal&background=random&color=fff"
+      },
+      {
+        "id": "u_1767405009433",
+        "name": "Sajad",
+        "email": "sajad@dummy.local",
+        "role": "member",
+        "status": "active",
+        "lastLogin": "Never",
+        "uniqueCode": "#Y1N72T",
+        "avatar": "https://ui-avatars.com/api/?name=Sajad&background=random&color=fff",
+        "isDummy": true
       }
     ]
   }

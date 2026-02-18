@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const { authenticate } = require('../middleware/auth');
 
 const KURIS_FILE = path.join(__dirname, '../data/kuris.json');
 
@@ -86,14 +87,15 @@ router.get('/:id', (req, res) => {
 });
 
 // CREATE kuri
-router.post('/', (req, res) => {
-    const { name, monthlyAmount, description, duration, startDate, adminId, memberIds, status, type, kuriTakenDate } = req.body;
+router.post('/', authenticate, (req, res) => {
+    const { name, monthlyAmount, description, duration, startDate, memberIds, status, type, kuriTakenDate } = req.body;
 
     if (!name || !monthlyAmount) {
         return res.status(400).json({ success: false, error: 'Name and monthly amount are required' });
     }
 
     const kuris = readKuris();
+    const creatorId = req.user.id;
 
     const newKuri = {
         id: 'k_' + Date.now(),
@@ -103,11 +105,11 @@ router.post('/', (req, res) => {
         duration: duration || '',
         startDate: startDate || '',
         kuriTakenDate: kuriTakenDate || '',
-        adminId: adminId || '',
-        memberIds: memberIds || [],
+        adminId: creatorId,
+        memberIds: memberIds || [creatorId],
         status: status || 'pending',
         type: type || 'new',
-        createdBy: adminId // Assuming admin creates it for now
+        createdBy: creatorId
     };
 
     kuris.unshift(newKuri);

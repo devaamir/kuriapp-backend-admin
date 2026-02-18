@@ -17,10 +17,12 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const kuriRoutes = require('./routes/kuris');
+const spinnerRoutes = require('./routes/spinner');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/kuris', kuriRoutes);
+app.use('/api/v1/spinner', spinnerRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {

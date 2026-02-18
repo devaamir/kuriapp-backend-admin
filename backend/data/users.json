@@ -1,5 +1,29 @@
 [
   {
+    "id": "u_1771416044062",
+    "name": "Arshad",
+    "email": "arshad@dummy.local",
+    "password": "123456",
+    "role": "member",
+    "status": "active",
+    "lastLogin": "Never",
+    "uniqueCode": "#0LJLM1",
+    "avatar": "https://ui-avatars.com/api/?name=Arshad&background=random&color=fff",
+    "isDummy": false
+  },
+  {
+    "id": "u_1771415516118",
+    "name": "anzil",
+    "email": "anzil@dummy.local",
+    "password": "123456",
+    "role": "member",
+    "status": "active",
+    "lastLogin": "Never",
+    "uniqueCode": "#DVCC4A",
+    "avatar": "https://ui-avatars.com/api/?name=anzil&background=random&color=fff",
+    "isDummy": true
+  },
+  {
     "id": "u_1767405009433",
     "name": "Sajad",
     "email": "sajad@dummy.local",

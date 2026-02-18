@@ -53,7 +53,7 @@ router.post('/register', (req, res) => {
     res.status(201).json({
         success: true,
         message: 'Account created successfully',
-        token: 'mock-jwt-token-' + Date.now(),
+        token: `mock-jwt-token-${newUser.id}-${Date.now()}`,
         user: {
             id: newUser.id,
             name: newUser.name,
@@ -82,7 +82,7 @@ router.post('/login', (req, res) => {
 
     res.json({
         success: true,
-        token: 'mock-jwt-token-' + Date.now(),
+        token: `mock-jwt-token-${user.id}-${Date.now()}`,
         user: {
             id: user.id,
             name: user.name,
