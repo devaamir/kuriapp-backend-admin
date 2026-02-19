@@ -37,6 +37,12 @@
         "avatar": "https://ui-avatars.com/api/?name=arshadd&background=random&color=fff",
         "isDummy": true
       }
+    ],
+    "winners": [
+      {
+        "month": 1,
+        "memberId": "u_1763883126899"
+      }
     ]
   },
   {
@@ -61,15 +67,11 @@
     "createdBy": "u_1763883126899",
     "winners": [
       {
-        "month": 1,
+        "month": 2,
         "memberId": "u_1764443619258"
       },
       {
         "month": 1,
-        "memberId": "u_1763883654797"
-      },
-      {
-        "month": 2,
         "memberId": "u_1763883654797"
       }
     ],
