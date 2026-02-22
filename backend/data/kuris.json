@@ -11,7 +11,8 @@
     "memberIds": [
       "u_1763883126899",
       "u_1771415516118",
-      "u_1771416044062"
+      "u_1771416044062",
+      "u_1763883654797"
     ],
     "status": "active",
     "type": "new",
@@ -41,7 +42,16 @@
     "winners": [
       {
         "month": 1,
-        "memberId": "u_1763883126899"
+        "memberId": "u_1763883654797"
+      }
+    ],
+    "nominations": [
+      {
+        "month": 1,
+        "originalWinnerId": "u_1763883654797",
+        "nominatedMemberId": "u_1763883126899",
+        "status": "pending",
+        "nominatedAt": "2026-02-19T15:05:34.551Z"
       }
     ]
   },

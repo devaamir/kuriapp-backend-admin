@@ -13,9 +13,11 @@ const readUsers = () => {
 };
 
 const authenticate = (req, res, next) => {
+    console.log('Auth headers:', req.headers.authorization);
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
+        console.log('No token found in headers');
         return res.status(401).json({ success: false, error: 'No token provided' });
     }
 
