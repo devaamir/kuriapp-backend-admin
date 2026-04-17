@@ -14,7 +14,7 @@
       "u_1771416044062",
       "u_1763883654797"
     ],
-    "status": "active",
+    "status": "rejected",
     "type": "new",
     "createdBy": "u_1763883126899",
     "members": [
@@ -28,15 +28,35 @@
         "avatar": "https://ui-avatars.com/api/?name=Aamir&background=random&color=fff"
       },
       {
-        "id": "u_1771414897271",
-        "name": "arshadd",
-        "email": "arshadd@dummy.local",
+        "id": "u_1771415516118",
+        "name": "anzil",
+        "email": "anzil@dummy.local",
         "role": "member",
         "status": "active",
         "lastLogin": "Never",
-        "uniqueCode": "#CXWTIB",
-        "avatar": "https://ui-avatars.com/api/?name=arshadd&background=random&color=fff",
+        "uniqueCode": "#DVCC4A",
+        "avatar": "https://ui-avatars.com/api/?name=anzil&background=random&color=fff",
         "isDummy": true
+      },
+      {
+        "id": "u_1771416044062",
+        "name": "Arshad",
+        "email": "arshad@dummy.local",
+        "role": "member",
+        "status": "active",
+        "lastLogin": "Never",
+        "uniqueCode": "#0LJLM1",
+        "avatar": "https://ui-avatars.com/api/?name=Arshad&background=random&color=fff",
+        "isDummy": false
+      },
+      {
+        "id": "u_1763883654797",
+        "name": "Shamnad",
+        "email": "shamnad@gmail.com",
+        "role": "member",
+        "status": "active",
+        "uniqueCode": "#1NWM1H",
+        "avatar": "https://ui-avatars.com/api/?name=Shamnad&background=random&color=fff"
       }
     ],
     "winners": [

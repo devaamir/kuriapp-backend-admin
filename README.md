@@ -265,6 +265,9 @@ Fetch a list of all users. Useful for searching/selecting members.
 
 **Endpoint:** `GET /users`
 
+**Query Parameters:**
+- `includeInactive` (optional): Set to `true` to include deactivated users. Default: `false`
+
 **Response (200 OK):**
 ```json
 [
@@ -272,10 +275,15 @@ Fetch a list of all users. Useful for searching/selecting members.
     "id": "u_101",
     "name": "Arun Kumar",
     "email": "user@example.com",
-    "uniqueCode": "#AK8821"
+    "uniqueCode": "#AK8821",
+    "status": "active"
   }
 ]
 ```
+
+**Note:** By default, inactive (deactivated) users are excluded from the response.
+
+---
 
 ### **Create User (or Dummy)**
 Create a new user. If password is omitted, it's treated as a dummy user.
@@ -293,6 +301,42 @@ Create a new user. If password is omitted, it's treated as a dummy user.
 
 **Response (201 Created):**
 Returns the created user object.
+
+---
+
+### **Delete Account (Soft Delete)**
+Deactivate a user account. Users cannot delete their account if they are part of any active or pending Kuri.
+
+**Endpoint:** `DELETE /users/:id`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Account deactivated successfully"
+}
+```
+
+**Response (400 Bad Request - Active Kuri Member):**
+```json
+{
+  "success": false,
+  "error": "You are an active Kuri member. Please contact the administrator to proceed.",
+  "activeKuris": [
+    {
+      "id": "k_501",
+      "name": "Office Monthly Savings",
+      "status": "active"
+    }
+  ]
+}
+```
+
+**Note:** 
+- This is a soft delete - user status is changed to `inactive` instead of permanent deletion
+- Inactive users cannot log in or be authenticated
+- User data is retained for historical and transactional references
+- Inactive users are hidden from user lists by default
 
 ---
 

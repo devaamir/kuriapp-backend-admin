@@ -30,11 +30,44 @@ router.post('/register', (req, res) => {
 
     const users = readUsers();
 
-    // Check if user exists
-    if (users.find(u => u.email === email)) {
+    // Check if active user exists (ignore inactive users)
+    const existingActiveUser = users.find(u => u.email === email && u.status !== 'inactive');
+    if (existingActiveUser) {
         return res.status(400).json({ success: false, error: 'User already exists' });
     }
 
+    // Check if inactive user exists - reactivate instead of creating new
+    const inactiveUserIndex = users.findIndex(u => u.email === email && u.status === 'inactive');
+    
+    if (inactiveUserIndex !== -1) {
+        // Reactivate the existing user with new details
+        users[inactiveUserIndex] = {
+            ...users[inactiveUserIndex],
+            name,
+            password,
+            status: 'active',
+            reactivatedAt: new Date().toISOString(),
+            deactivatedAt: undefined
+        };
+        writeUsers(users);
+        
+        const reactivatedUser = users[inactiveUserIndex];
+        return res.status(201).json({
+            success: true,
+            message: 'Account created successfully',
+            token: `mock-jwt-token-${reactivatedUser.id}-${Date.now()}`,
+            user: {
+                id: reactivatedUser.id,
+                name: reactivatedUser.name,
+                email: reactivatedUser.email,
+                role: reactivatedUser.role,
+                uniqueCode: reactivatedUser.uniqueCode,
+                avatar: reactivatedUser.avatar
+            }
+        });
+    }
+
+    // Create new user
     const newUser = {
         id: 'u_' + Date.now(),
         name,
@@ -74,7 +107,7 @@ router.post('/login', (req, res) => {
     }
 
     const users = readUsers();
-    const user = users.find(u => u.email === email && u.password === password);
+    const user = users.find(u => u.email === email && u.password === password && u.status !== 'inactive');
 
     if (!user) {
         return res.status(401).json({ success: false, error: 'Invalid credentials' });
@@ -89,7 +122,8 @@ router.post('/login', (req, res) => {
             email: user.email,
             role: user.role,
             uniqueCode: user.uniqueCode,
-            avatar: user.avatar
+            avatar: user.avatar,
+            status: user.status
         }
     });
 });

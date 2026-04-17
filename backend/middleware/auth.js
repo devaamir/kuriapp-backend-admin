@@ -31,6 +31,11 @@ const authenticate = (req, res, next) => {
         return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
+    // Block inactive users
+    if (user.status === 'inactive') {
+        return res.status(403).json({ success: false, error: 'Account has been deactivated' });
+    }
+
     req.user = user;
     next();
 };

@@ -64,5 +64,15 @@
     "status": "active",
     "uniqueCode": "#HZ1DPZ",
     "avatar": "https://ui-avatars.com/api/?name=Arshal&background=random&color=fff"
+  },
+  {
+    "id": "u_1773103418347",
+    "name": "Arshad",
+    "email": "arshad@gmail.com",
+    "password": "1234567",
+    "role": "member",
+    "status": "active",
+    "uniqueCode": "#5P7XJ7",
+    "avatar": "https://ui-avatars.com/api/?name=Arshad&background=random&color=fff"
   }
 ]
