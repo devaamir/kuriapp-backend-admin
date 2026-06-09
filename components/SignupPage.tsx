@@ -32,7 +32,7 @@ export const SignupPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://kuriapp-backend-admin.onrender.com/api/v1';
+            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
