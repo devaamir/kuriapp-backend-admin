@@ -28,7 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     // For now, let's try API first, if it fails, check hardcoded admin
 
     try {
-      const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+      const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,6 +60,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       }
     } catch (e: any) {
       console.error("Login Error", e);
+      // Fallback for when backend is offline
+      if (email.toLowerCase() === 'admin@kuriapp.com' && password === 'admin123') {
+        const adminUser: User = {
+          id: 'admin-1',
+          name: 'Kuri Admin',
+          email: 'admin@kuriapp.com',
+          role: 'admin',
+          avatar: 'https://ui-avatars.com/api/?name=Kuri+Admin&background=4f46e5&color=fff',
+          status: 'active',
+          lastLogin: new Date().toISOString(),
+          uniqueCode: '#MASTER01',
+        };
+        onLogin(adminUser);
+        return;
+      }
       setError(e.message || 'Login failed. Please check your connection.');
     } finally {
       setIsLoading(false);

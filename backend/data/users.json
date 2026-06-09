@@ -1,5 +1,15 @@
 [
   {
+    "id": "admin-1",
+    "name": "Kuri Admin",
+    "email": "admin@kuriapp.com",
+    "password": "admin123",
+    "role": "admin",
+    "status": "active",
+    "uniqueCode": "#MASTER01",
+    "avatar": "https://ui-avatars.com/api/?name=Kuri+Admin&background=4f46e5&color=fff"
+  },
+  {
     "id": "u_1771416044062",
     "name": "Arshad",
     "email": "arshad@dummy.local",
@@ -39,7 +49,7 @@
     "id": "u_1763883126899",
     "name": "Sayed Muhammed Aamir",
     "email": "pmaamirit@gmail.com",
-    "password": "1234567",
+    "password": "12345678",
     "role": "member",
     "status": "active",
     "uniqueCode": "#JV2F6W",

@@ -35,7 +35,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
 
     const fetchData = async () => {
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
 
             const [kuriRes, usersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/kuris/${id}`),
@@ -106,7 +106,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         };
 
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             const response = await fetch(`${API_BASE_URL}/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -138,7 +138,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         };
 
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             const response = await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -172,7 +172,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         setKuri(updatedKuri); // Optimistic update
 
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -195,7 +195,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         setKuri(updatedKuri); // Optimistic update
 
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

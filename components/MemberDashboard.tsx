@@ -42,7 +42,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({ user }) => {
 
     const fetchData = async () => {
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             const [kurisRes, usersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/kuris?userId=${user.id}`),
                 fetch(`${API_BASE_URL}/users`)
@@ -129,7 +129,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({ user }) => {
     const handleSubmitKuri = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const API_BASE_URL = `http://${window.location.hostname}:3001/api/v1`;
+            const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
             const kuriData = {
                 ...formData,
                 monthlyAmount: Number(formData.monthlyAmount),
