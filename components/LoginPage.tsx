@@ -28,7 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     // For now, let's try API first, if it fails, check hardcoded admin
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3001/api/v1`;
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://kuriapp-backend-admin.onrender.com/api/v1';
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
