@@ -1,131 +1,83 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-// Helper to read users
-const readUsers = () => {
-    try {
-        const data = fs.readFileSync(USERS_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        return [];
-    }
-};
-
-// Helper to write users
-const writeUsers = (users) => {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-};
+const pool = require('../db');
 
 // REGISTER
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
+    if (!name || !email || !password)
         return res.status(400).json({ success: false, error: 'Please provide all fields' });
-    }
 
-    const users = readUsers();
+    try {
+        // Check if active user exists
+        const existing = await pool.query(
+            `SELECT id, status FROM users WHERE email = $1`, [email]
+        );
 
-    // Check if active user exists (ignore inactive users)
-    const existingActiveUser = users.find(u => u.email === email && u.status !== 'inactive');
-    if (existingActiveUser) {
-        return res.status(400).json({ success: false, error: 'User already exists' });
-    }
+        if (existing.rows.length > 0) {
+            const user = existing.rows[0];
+            if (user.status !== 'inactive')
+                return res.status(400).json({ success: false, error: 'User already exists' });
 
-    // Check if inactive user exists - reactivate instead of creating new
-    const inactiveUserIndex = users.findIndex(u => u.email === email && u.status === 'inactive');
-    
-    if (inactiveUserIndex !== -1) {
-        // Reactivate the existing user with new details
-        users[inactiveUserIndex] = {
-            ...users[inactiveUserIndex],
-            name,
-            password,
-            status: 'active',
-            reactivatedAt: new Date().toISOString(),
-            deactivatedAt: undefined
-        };
-        writeUsers(users);
-        
-        const reactivatedUser = users[inactiveUserIndex];
-        return res.status(201).json({
-            success: true,
-            message: 'Account created successfully',
-            token: `mock-jwt-token-${reactivatedUser.id}-${Date.now()}`,
-            user: {
-                id: reactivatedUser.id,
-                name: reactivatedUser.name,
-                email: reactivatedUser.email,
-                role: reactivatedUser.role,
-                uniqueCode: reactivatedUser.uniqueCode,
-                avatar: reactivatedUser.avatar
-            }
-        });
-    }
-
-    // Create new user
-    const newUser = {
-        id: 'u_' + Date.now(),
-        name,
-        email,
-        password, // In production, hash this!
-        role: 'member',
-        status: 'active',
-        uniqueCode: '#' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
-    };
-
-    users.push(newUser);
-    writeUsers(users);
-
-    // Return success with mock token
-    res.status(201).json({
-        success: true,
-        message: 'Account created successfully',
-        token: `mock-jwt-token-${newUser.id}-${Date.now()}`,
-        user: {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-            uniqueCode: newUser.uniqueCode,
-            avatar: newUser.avatar
+            // Reactivate inactive user
+            const reactivated = await pool.query(
+                `UPDATE users SET name=$1, password=$2, status='active' WHERE id=$3 RETURNING id, name, email, role, unique_code, avatar`,
+                [name, password, user.id]
+            );
+            const u = reactivated.rows[0];
+            return res.status(201).json({
+                success: true,
+                token: `mock-jwt-token-${u.id}-${Date.now()}`,
+                user: { id: u.id, name: u.name, email: u.email, role: u.role, uniqueCode: u.unique_code, avatar: u.avatar }
+            });
         }
-    });
+
+        const id = 'u_' + Date.now();
+        const uniqueCode = '#' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+
+        const result = await pool.query(
+            `INSERT INTO users (id, name, email, password, role, status, unique_code, avatar)
+             VALUES ($1,$2,$3,$4,'member','active',$5,$6)
+             RETURNING id, name, email, role, unique_code, avatar`,
+            [id, name, email, password, uniqueCode, avatar]
+        );
+        const u = result.rows[0];
+        res.status(201).json({
+            success: true,
+            token: `mock-jwt-token-${u.id}-${Date.now()}`,
+            user: { id: u.id, name: u.name, email: u.email, role: u.role, uniqueCode: u.unique_code, avatar: u.avatar }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
 });
 
 // LOGIN
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
+    if (!email || !password)
         return res.status(400).json({ success: false, error: 'Please provide email and password' });
+
+    try {
+        const result = await pool.query(
+            `SELECT * FROM users WHERE email=$1 AND password=$2 AND status != 'inactive'`,
+            [email, password]
+        );
+        if (result.rows.length === 0)
+            return res.status(401).json({ success: false, error: 'Invalid credentials' });
+
+        const u = result.rows[0];
+        res.json({
+            success: true,
+            token: `mock-jwt-token-${u.id}-${Date.now()}`,
+            user: { id: u.id, name: u.name, email: u.email, role: u.role, uniqueCode: u.unique_code, avatar: u.avatar, status: u.status }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
-
-    const users = readUsers();
-    const user = users.find(u => u.email === email && u.password === password && u.status !== 'inactive');
-
-    if (!user) {
-        return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-
-    res.json({
-        success: true,
-        token: `mock-jwt-token-${user.id}-${Date.now()}`,
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            uniqueCode: user.uniqueCode,
-            avatar: user.avatar,
-            status: user.status
-        }
-    });
 });
 
 module.exports = router;
