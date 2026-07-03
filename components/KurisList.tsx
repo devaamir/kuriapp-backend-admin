@@ -3,7 +3,7 @@ import { Button } from './Button';
 import { Input } from './Input';
 import { Plus, Edit2, Trash2, X, DollarSign, Calendar, Clock, Briefcase, UserPlus, Check, Bot, ShieldCheck } from 'lucide-react';
 import { Kuri, User } from '../types';
-import { KURIS_STORAGE_KEY, USERS_STORAGE_KEY } from '../constants';
+import { KURIS_STORAGE_KEY, USERS_STORAGE_KEY, API_BASE_URL } from '../constants';
 
 interface KurisListProps {
   currentUser: User;
@@ -46,7 +46,7 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
 
   const fetchData = async () => {
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
 
       // If admin, fetch all. If member, filter by ID.
       const kurisUrl = isAdmin
@@ -118,7 +118,7 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this Kuri?')) {
       try {
-        const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+  
         await fetch(`${API_BASE_URL}/kuris/${id}`, { method: 'DELETE' });
         setKuris(prev => prev.filter(k => k.id !== id));
       } catch (error) {
@@ -150,7 +150,7 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
     };
 
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
       const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -191,7 +191,7 @@ export const KurisList: React.FC<KurisListProps> = ({ currentUser }) => {
     };
 
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
       if (editingKuri) {
         const response = await fetch(`${API_BASE_URL}/kuris/${editingKuri.id}`, {
           method: 'PUT',

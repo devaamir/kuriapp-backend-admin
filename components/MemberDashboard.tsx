@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Wallet, Briefcase, Calendar, ChevronRight, Plus, X, DollarSign, Clock, UserPlus, Check, Bot } from 'lucide-react';
 import { User, Kuri } from '../types';
+import { API_BASE_URL } from '../constants';
 import { Button } from './Button';
 import { Input } from './Input';
 
@@ -42,7 +43,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({ user }) => {
 
     const fetchData = async () => {
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             const [kurisRes, usersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/kuris?userId=${user.id}`),
                 fetch(`${API_BASE_URL}/users`)
@@ -129,7 +130,7 @@ export const MemberDashboard: React.FC<MemberDashboardProps> = ({ user }) => {
     const handleSubmitKuri = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             const kuriData = {
                 ...formData,
                 monthlyAmount: Number(formData.monthlyAmount),

@@ -3,7 +3,7 @@ import { Button } from './Button';
 import { Input } from './Input';
 import { Plus, Edit2, Trash2, X, User as UserIcon, Mail, Lock, AlertCircle, Bot } from 'lucide-react';
 import { User } from '../types';
-import { USERS_STORAGE_KEY } from '../constants';
+import { USERS_STORAGE_KEY, API_BASE_URL } from '../constants';
 
 export const UsersList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -20,7 +20,7 @@ export const UsersList: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
       const response = await fetch(`${API_BASE_URL}/users`);
       if (response.ok) {
         const data = await response.json();
@@ -57,7 +57,7 @@ export const UsersList: React.FC = () => {
   const handleDelete = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this User?')) {
       try {
-        const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+  
         await fetch(`${API_BASE_URL}/users/${userId}`, { method: 'DELETE' });
         setUsers(prev => prev.filter(u => u.id !== userId));
       } catch (error) {
@@ -74,7 +74,7 @@ export const UsersList: React.FC = () => {
     }
 
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
       if (editingUser) {
         // Update User
         const response = await fetch(`${API_BASE_URL}/users/${editingUser.id}`, {

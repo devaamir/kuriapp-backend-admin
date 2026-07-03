@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input } from './Input';
 import { Button } from './Button';
 import { User } from '../types';
-import { USERS_STORAGE_KEY } from '../constants';
+import { USERS_STORAGE_KEY, API_BASE_URL } from '../constants';
 
 export const SignupPage: React.FC = () => {
     const navigate = useNavigate();
@@ -32,7 +32,7 @@ export const SignupPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

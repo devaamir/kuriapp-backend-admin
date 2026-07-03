@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Users, DollarSign, Clock, CheckCircle, AlertCircle, Edit2, Plus, X, Trash2, UserPlus, Check, Bot, ShieldCheck, BarChart2 } from 'lucide-react';
 import { Kuri, User, Payment } from '../types';
+import { API_BASE_URL } from '../constants';
 import { Button } from './Button';
 import { Input } from './Input';
 
@@ -35,7 +36,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
 
     const fetchData = async () => {
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
 
             const [kuriRes, usersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/kuris/${id}`),
@@ -106,7 +107,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         };
 
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             const response = await fetch(`${API_BASE_URL}/users`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -138,7 +139,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         };
 
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             const response = await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -172,7 +173,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         setKuri(updatedKuri); // Optimistic update
 
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -195,7 +196,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
         setKuri(updatedKuri); // Optimistic update
 
         try {
-            const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+      
             await fetch(`${API_BASE_URL}/kuris/${kuri.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Input } from './Input';
 import { Button } from './Button';
 import { User } from '../types';
-import { USERS_STORAGE_KEY } from '../constants';
+import { USERS_STORAGE_KEY, API_BASE_URL } from '../constants';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -28,7 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     // For now, let's try API first, if it fails, check hardcoded admin
 
     try {
-      const API_BASE_URL = 'https://kuriapp-backend-admin.onrender.com/api/v1';
+
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
