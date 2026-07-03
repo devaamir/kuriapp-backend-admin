@@ -37,7 +37,14 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start Server
+const os = require('os');
+const networkInterfaces = os.networkInterfaces();
+const localIP = Object.values(networkInterfaces)
+    .flat()
+    .find(i => i.family === 'IPv4' && !i.internal)?.address || 'localhost';
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Network URL: http://192.168.1.24:${PORT}`);
+    console.log(`Local:   http://localhost:${PORT}`);
+    console.log(`Network: http://${localIP}:${PORT}`);
 });
