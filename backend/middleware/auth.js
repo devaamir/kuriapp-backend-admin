@@ -1,43 +1,35 @@
-const fs = require('fs');
-const path = require('path');
+require('dotenv').config();
+const pool = require('../db');
+const jwt = require('jsonwebtoken');
 
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-const readUsers = () => {
-    try {
-        const data = fs.readFileSync(USERS_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        return [];
-    }
-};
-
-const authenticate = (req, res, next) => {
-    console.log('Auth headers:', req.headers.authorization);
+const authenticate = async (req, res, next) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
-    if (!token) {
-        console.log('No token found in headers');
+    if (!token)
         return res.status(401).json({ success: false, error: 'No token provided' });
-    }
 
-    // Extract userId from mock token (format: mock-jwt-token-{userId}-{timestamp})
-    const userId = token.split('-')[3];
-    
-    const users = readUsers();
-    const user = users.find(u => u.id === userId);
+    try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!user) {
+        const result = await pool.query(
+            `SELECT id, name, email, role, unique_code, avatar, status FROM users WHERE id=$1`,
+            [payload.id]
+        );
+
+        if (result.rows.length === 0)
+            return res.status(401).json({ success: false, error: 'Invalid token' });
+
+        const user = result.rows[0];
+        if (user.status === 'inactive')
+            return res.status(403).json({ success: false, error: 'Account has been deactivated' });
+
+        req.user = { ...user, uniqueCode: user.unique_code };
+        next();
+    } catch (err) {
+        if (err.name === 'TokenExpiredError')
+            return res.status(401).json({ success: false, error: 'Token expired' });
         return res.status(401).json({ success: false, error: 'Invalid token' });
     }
-
-    // Block inactive users
-    if (user.status === 'inactive') {
-        return res.status(403).json({ success: false, error: 'Account has been deactivated' });
-    }
-
-    req.user = user;
-    next();
 };
 
 module.exports = { authenticate };

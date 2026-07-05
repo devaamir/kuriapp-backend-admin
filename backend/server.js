@@ -1,9 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const pool = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    token TEXT UNIQUE NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.error('Failed to create refresh_tokens table:', err));
 
 // Middleware
 const allowedOrigins = process.env.ALLOWED_ORIGINS
