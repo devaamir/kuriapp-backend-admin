@@ -676,7 +676,7 @@ export const KuriDetails: React.FC<KuriDetailsProps> = ({ currentUser }) => {
                                 <button type="button" onClick={() => setIsDummyModalOpen(true)} className="w-full flex items-center justify-center p-3 border-2 border-dashed border-indigo-200 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-colors">
                                     <Plus className="w-4 h-4 mr-2" /> Create & Add Dummy Member
                                 </button>
-                                {allUsers.filter(u => u.role !== 'admin').map(user => (
+                                {allUsers.map(user => (
                                     <div key={user.id} onClick={() => toggleMemberSelection(user.id)} className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${selectedMembers.includes(user.id) ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500' : 'border-slate-200 hover:bg-slate-50'}`}>
                                         <img src={user.avatar} alt="" className="w-8 h-8 rounded-full" />
                                         <div className="ml-3 flex-1">

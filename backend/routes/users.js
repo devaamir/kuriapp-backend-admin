@@ -7,8 +7,8 @@ router.get('/', async (req, res) => {
     const { includeInactive } = req.query;
     try {
         const query = includeInactive === 'true'
-            ? `SELECT id, name, email, role, status, unique_code, avatar, is_dummy, last_login FROM users ORDER BY created_at DESC`
-            : `SELECT id, name, email, role, status, unique_code, avatar, is_dummy, last_login FROM users WHERE status != 'inactive' ORDER BY created_at DESC`;
+            ? `SELECT id, name, email, role, status, unique_code, avatar, is_dummy, last_login FROM users WHERE role != 'admin' ORDER BY created_at DESC`
+            : `SELECT id, name, email, role, status, unique_code, avatar, is_dummy, last_login FROM users WHERE role != 'admin' AND status != 'inactive' ORDER BY created_at DESC`;
         const result = await pool.query(query);
         res.json(result.rows.map(u => ({ ...u, uniqueCode: u.unique_code, isDummy: u.is_dummy })));
     } catch (err) {
